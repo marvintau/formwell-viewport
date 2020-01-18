@@ -1,0 +1,24 @@
+{
+  "files": {
+    "main.js": "/formwell-viewport/static/js/main.086015f5.chunk.js",
+    "main.js.map": "/formwell-viewport/static/js/main.086015f5.chunk.js.map",
+    "runtime-main.js": "/formwell-viewport/static/js/runtime-main.febe910f.js",
+    "runtime-main.js.map": "/formwell-viewport/static/js/runtime-main.febe910f.js.map",
+    "static/css/2.47e06e2e.chunk.css": "/formwell-viewport/static/css/2.47e06e2e.chunk.css",
+    "static/js/2.0e89e6f7.chunk.js": "/formwell-viewport/static/js/2.0e89e6f7.chunk.js",
+    "static/js/2.0e89e6f7.chunk.js.map": "/formwell-viewport/static/js/2.0e89e6f7.chunk.js.map",
+    "index.html": "/formwell-viewport/index.html",
+    "precache-manifest.8d2f868b23c81ea6850eac137d10fda1.js": "/formwell-viewport/precache-manifest.8d2f868b23c81ea6850eac137d10fda1.js",
+    "service-worker.js": "/formwell-viewport/service-worker.js",
+    "static/css/2.47e06e2e.chunk.css.map": "/formwell-viewport/static/css/2.47e06e2e.chunk.css.map",
+    "static/js/2.0e89e6f7.chunk.js.LICENSE": "/formwell-viewport/static/js/2.0e89e6f7.chunk.js.LICENSE",
+    "static/media/filter.svg": "/formwell-viewport/static/media/filter.e8c1ef84.svg",
+    "static/media/sort-ascending.svg": "/formwell-viewport/static/media/sort-ascending.199eee97.svg"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.febe910f.js",
+    "static/css/2.47e06e2e.chunk.css",
+    "static/js/2.0e89e6f7.chunk.js",
+    "static/js/main.086015f5.chunk.js"
+  ]
+}
