@@ -1,11 +1,13 @@
 import React, { createContext, useContext, useState } from "react";
 import { VariableSizeList as List } from "react-window";
-import {Col, Input, Button} from 'reactstrap';
+import {InputGroup, InputGroupAddon, InputGroupText, Col, Input, Button} from 'reactstrap';
 import AutoSizer from "react-virtualized-auto-sizer";
 import {genCascadedNameEntries} from './nameGenerate';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+import FilterIcon from './filter.svg';
+import SortIcon from './sort-ascending.svg';
 
 const entries = genCascadedNameEntries(20000);
 const LINE_HEIGHT = 30;
@@ -14,16 +16,30 @@ console.log(entries);
 
 
 const TreeContext = createContext({
+
+  // Original sublist comes from the original data, and
+  // copied to the displayed list, and then apply the sorting
+  // and filtering method over it.
+  sublist: [],
+  displayList: [],
   history:[],
-  list:[],
+
+  sort:() => {},
+  filter: () => {},
+
   pop:() => {},
   select:() => {}
 });
 
 const TreeList = function({data, children, itemSize, ...rest}){
   
+  const ProcessedData = data.map((e, i) => ({...e, listIndex:i}));
+
   const [history, setHistory] = useState([]);
-  const [sublist, setSublist] = useState(data.map((e, i) => ({...e, listIndex:i})));
+  const [sublist, setSublist] = useState(ProcessedData);
+
+  const [colSorts, setColSorts] = useState([]);
+  const [colFilters, setColFilters] = useState({});
 
   const select = (ith) => {
 
@@ -47,10 +63,57 @@ const TreeList = function({data, children, itemSize, ...rest}){
     setSublist(newSublist);
   }
 
-  
-  const entries = [...history, {filter:true}, ...sublist]
+  const sort = (key) => {
 
-  return <TreeContext.Provider value={{history, sublist, select, pop}}>
+    let sorts = [...colSorts];
+
+    if(sorts.length > 0){
+      let keyIndex = sorts.findIndex((e) => e.col === key);
+
+      let iden = {col:key, order:'ascend'};
+      if (keyIndex !== -1){
+        [iden] = sorts.splice(keyIndex, 1);
+        iden.order = iden.order === 'ascend' ? 'descend' : 'ascend';
+      }
+      sorts.push(iden);
+
+    } else {
+      sorts = [{col:key, order:'ascend'}];
+    }
+
+    setColSorts(sorts);
+  }
+
+  const filter = (key, pattern) => {
+    setColFilters({...colFilters, [key]: pattern});
+  }
+
+  let displayed = [...sublist];
+  for (let {col, order} of colSorts){
+    displayed.sort((prev, next) => {
+      const original = prev[col] < next[col] ? -1 : prev[col] > next[col] ? 1 : 0;
+      const modifier = {
+        'descend' : 1,
+        'ascend'  : -1
+      }[order];
+
+      return original * modifier;
+    })
+  }
+
+  for (let key in colFilters){
+    const filtered = displayed.filter((elem) => {
+      return elem[key].toString().includes(colFilters[key]);
+    })
+
+    if (filtered.length > 0){
+      displayed = filtered;
+    }
+  }
+
+  const entries = [...history, {filter:true}, ...displayed]
+
+  return <TreeContext.Provider value={{history, sublist, select, pop, sort, filter}}>
     <List
       itemData={{ ItemRenderer: children, entries}}
       estimatedItemSize={itemSize}
@@ -100,7 +163,9 @@ const FilterHolder = ({children, topLength}) => {
   return <div className="sticky" style={style}>{children}</div>
 }
 
-const FilterCol = ({...colProps}) => {
+const FilterCol = ({colKey, isFilterable, isSortable, ...colProps}) => {
+
+  const {sort, filter} = useContext(TreeContext);
 
   const colStyle = {
     display:'flex',
@@ -111,9 +176,20 @@ const FilterCol = ({...colProps}) => {
     flex:'0 1 6rem',
   }
 
+  const FilterComp = <InputGroup size='sm'>
+    <Input onKeyUp={(e) => filter(colKey, e.target.value)} />
+    <InputGroupAddon color="warning" addonType="prepend">
+      <InputGroupText><img style={{height:'1.1rem'}} src={FilterIcon} /></InputGroupText>
+    </InputGroupAddon>
+  </InputGroup>
+
   return <Col style={colStyle} {...colProps} >
-    <Input bsSize="sm"/>
-    <div style={buttonWrapStyle}><Button style={{marginLeft:'0.5rem'}} size="sm" color="info">排序</Button></div>
+    {isFilterable && FilterComp}
+    {isSortable && <div style={buttonWrapStyle}>
+      <Button onClick={() => {sort(colKey)}} style={{marginLeft:'0.5rem', lineHeight:'1.25rem'}} size="sm" color="warning">
+        <img style={{height:'1.1rem'}} src={SortIcon} />
+      </Button>
+    </div>}
   </Col>
 }
 
@@ -131,8 +207,8 @@ const HistoryHolder = ({ children, ...rest }) => {
     })}
     <FilterHolder topLength={history.length}>
       <FilterCol md='3'/>
-      <FilterCol md='6'/>
-      <FilterCol md='3'/>
+      <FilterCol md='6' colKey='desc' isSortable={true} isFilterable={true}/>
+      <FilterCol md='3' colKey='key'  isSortable={true} isFilterable={true}/>
     </FilterHolder>
     {children}
   </div>
@@ -150,7 +226,7 @@ const Row = ({ data, index, style }) => {
     alignItems: 'center'
   }
 
-  return <div style={{...style, ...rowStyle}} onClick={() => select(listIndex)}>
+  return <div className='hovered' style={{...style, ...rowStyle}} onClick={() => select(listIndex)}>
     <Col md='3'><div style={{margin:'0.5rem'}}>{name}</div></Col>
     <Col md='6'><div style={{margin:'0.5rem'}}>{desc}</div></Col>
     <Col md='3'><div style={{margin:'0.5rem'}}>{key}</div></Col>
@@ -169,7 +245,7 @@ const HistRow = ({ data, index, style }) => {
     alignItems: 'center'
   }
 
-  return <div className="sticky" style={{...style, ...rowStyle}} onClick={() => pop(histIndex)}>
+  return <div className="sticky hovered" style={{...style, ...rowStyle}} onClick={() => pop(histIndex)}>
     <Col md='3'><div style={{margin:'0 0.5rem'}}>{name}</div></Col>
     <Col md='6'><div style={{margin:'0 0.5rem'}}>{desc}</div></Col>
     <Col md='3'><div style={{margin:'0 0.5rem'}}>{key}</div></Col>
@@ -177,21 +253,50 @@ const HistRow = ({ data, index, style }) => {
 };
 
 const App = () => {
+
+  let headerStyle = {
+    display: 'flex',
+    userSelect:'none',
+    alignItems:'center',
+    backgroundColor:'#343a40',
+    color:'#f8f9fa'
+  }
+
+  const header = <div className="header" style={headerStyle}>
+    <Col md='3'><div style={{margin:'0 0.5rem'}}>Name (Random path-like text)</div></Col>
+    <Col md='6'><div style={{margin:'0 0.5rem'}}>Description (Random name-like text)</div></Col>
+    <Col md='3'><div style={{margin:'0 0.5rem'}}>Index (Random integer)</div></Col>
+  </div>
+
+  const titleStyle = {
+    marginLeft:'10px',
+    fontFamily: '"Avenir Next", "Helvetica Neue", sans-serif',
+    fontWeight:'700',
+    fontSize:'4.5rem',
+    letterSpacing:'-0.3rem'
+  }
+
+  const title = <h1 style={titleStyle}>Cascaded (Tree-like) Data</h1>
+
   return  <div style={{height:'100vh', width:'100vw'}}>
-    <AutoSizer>
-      {({height, width}) => {
-        return <TreeList
-          data={entries}
-          height={height}
-          width={width}
-          itemSize={LINE_HEIGHT}
-          itemCount={entries.length}
-          innerElementType={HistoryHolder}
-        >
-          {Row}
-        </TreeList>
-      }}
-    </AutoSizer>
+    {title}
+    {header}
+    <div style={{height:'80vh', width:'100%'}}>
+      <AutoSizer>
+        {({height, width}) => {
+          return <TreeList
+            data={entries}
+            height={height}
+            width={width}
+            itemSize={LINE_HEIGHT}
+            itemCount={entries.length}
+            innerElementType={HistoryHolder}
+          >
+            {Row}
+          </TreeList>
+        }}
+      </AutoSizer>
+    </div>
   </div>
 };
 
