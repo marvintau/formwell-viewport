@@ -1,13 +1,11 @@
-import React, { useContext } from "react";
-import {Col} from 'reactstrap';
+import React, { useContext, useState, forwardRef } from "react";
+import {Button, Col} from 'reactstrap';
 import AutoSizer from "react-virtualized-auto-sizer";
 import {genCascadedNameEntries} from './nameGenerate';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { TreeListContext, TreeList} from "./TreeList";
-
-const LINE_HEIGHT = 30;
 
 const entries = genCascadedNameEntries(20000);
 console.log(entries);
@@ -17,7 +15,7 @@ console.log(entries);
 // to render sticky items.
 
 
-const Row = ({ data, index, style }) => {
+const Row = forwardRef(({ data, index, style }, ref) => {
   
   const {select} = useContext(TreeListContext);
 
@@ -29,12 +27,12 @@ const Row = ({ data, index, style }) => {
     alignItems: 'center'
   }
 
-  return <div className='hovered' style={{...style, ...rowStyle}} onClick={() => select(listIndex)}>
+  return <div ref={ref} className='hovered' style={{...style, ...rowStyle}} onClick={() => select(listIndex)}>
     <Col md='3'><div style={{margin:'0.5rem'}}>{name}</div></Col>
     <Col md='6'><div style={{margin:'0.5rem'}}>{desc}</div></Col>
     <Col md='3'><div style={{margin:'0.5rem'}}>{key}</div></Col>
   </div>
-};
+});
 
 const HistRow = ({ data, index, style }) => {
   
@@ -92,7 +90,6 @@ const App = () => {
             data={entries}
             height={height}
             width={width}
-            itemSize={LINE_HEIGHT}
             itemCount={entries.length}
             historyRowRender={HistRow}
           >

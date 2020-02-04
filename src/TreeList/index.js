@@ -1,12 +1,11 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useRef, useState, useContext, forwardRef } from "react";
 import {Col, Input, Button} from 'reactstrap';
-import { VariableSizeList as List } from "react-window";
+import { DynamicSizeList as List } from "react-window";
 
 import FilterIcon from './filter.svg';
 import SortIcon from './sort-ascending.svg';
 
-const LINE_HEIGHT = 30;
-const FILTER_BAR_HEIGHT = 45;
+const HIST_LINE_HEIGHT = 30;
 
 // Item Wrapper is the direct item render of react-window List. It does two
 // things:
@@ -15,23 +14,23 @@ const FILTER_BAR_HEIGHT = 45;
 // 2. Render the remaining non-sticky items with the actual render we pass
 //    into.
 
-const ItemWrapper = ({ data, index, style }) => {
+const ItemWrapper = forwardRef(({ data, index, style }, ref) => {
   const { ItemRenderer, entries } = data;
 
   if (entries[index] === undefined){
-    return null;
+    return <></>
   }
 
   if(entries[index].filter){
-    return null
+    return <div ref={ref}><div style={{height:40}} /></div>;
   }
 
-  if (entries[index].listIndex === undefined) {
-    return null;
+  if (entries[index].histIndex !== undefined) {
+    return <div ref={ref}><div style={{height:30}} /></div>;
   }
 
-  return <ItemRenderer data={entries} index={index} style={style} />;
-};
+  return <ItemRenderer ref={ref} data={entries} index={index} style={style} />;
+});
 
 // TreeList 用来显示层级数据的重要部件
 // ----------------------------------
@@ -64,7 +63,7 @@ const TreeListContext = createContext({
   filter: () => {},
 
   pop:() => {},
-  select:() => {}
+  select:() => {},
 });
 
 const TreeList = function({data, children, itemSize, historyRowRender, ...rest}){
@@ -149,12 +148,10 @@ const TreeList = function({data, children, itemSize, historyRowRender, ...rest})
   }
 
   const entries = [...history, {filter:true}, ...displayed]
-
+  console.log(entries);
   return <TreeListContext.Provider value={{history, sublist, select, pop, sort, filter}}>
     <List
       itemData={{ ItemRenderer: children, entries}}
-      estimatedItemSize={itemSize}
-      itemSize={(index) => index === history.length ? FILTER_BAR_HEIGHT : LINE_HEIGHT}
       innerElementType={HistoryContainer(historyRowRender, history)}
     {...rest}
     >
@@ -166,9 +163,9 @@ const TreeList = function({data, children, itemSize, historyRowRender, ...rest})
 
 const FilterContainer = ({children, topLength}) => {
   const style = {
-    top: topLength * LINE_HEIGHT,
-    height: FILTER_BAR_HEIGHT,
-    backgroundColor:'#abcdef',
+    top: topLength * HIST_LINE_HEIGHT,
+    height: 40,
+    backgroundColor:'lightgray',
     display: 'flex',
     alignItems: 'center'
   }
@@ -186,34 +183,40 @@ const FilterCol = ({colKey, isFilterable, isSortable, ...colProps}) => {
   }
 
   const FilterComp = <div style={{display:'flex'}}>
-    <Input value={inputVal} onChange={(e) => setInputVal(e.target.value)} />
-    <Button color="info" style={{marginLeft:'0.5rem'}} onClick={() => filter(colKey, inputVal)}>
+    <Input bsSize="sm" value={inputVal} onChange={(e) => setInputVal(e.target.value)} />
+    <Button color="dark" outline size="sm" style={{marginLeft:'0.5rem'}} onClick={() => filter(colKey, inputVal)}>
       <img style={{height:'1.1rem'}} src={FilterIcon} />
     </Button>
   </div>
 
   return <Col style={colStyle} {...colProps} >
     {isFilterable && FilterComp}
-    {isSortable && <div>
-      <Button onClick={() => {sort(colKey)}} style={{marginLeft:'0.5rem'}} color="warning">
+    {isSortable && <Button color="dark" outline size="sm" onClick={() => {sort(colKey)}} style={{marginLeft:'0.5rem'}}>
         <img style={{height:'1.1rem'}} src={SortIcon} />
-      </Button>
-    </div>}
+      </Button>}
   </Col>
 }
 
-const HistoryContainer = (RowRenderer, history) => {
+const HistoryContainer = (HistRowRenderer, history) => {
 
   return ({children, ...rest }) => {
 
     return <div {...rest}>
       {history.map((elem, index) => {
-        return <RowRenderer
+
+        const style = {
+          left: 0, 
+          top: index * HIST_LINE_HEIGHT,
+          width: "100%", height: HIST_LINE_HEIGHT
+        }
+
+        return <HistRowRenderer
           data={history}
           index={index}
           key={index}
-          style={{ top: index * LINE_HEIGHT, left: 0, width: "100%", height: LINE_HEIGHT }}
+          style={style}
         />
+
       })}
       <FilterContainer topLength={history.length}>
         <FilterCol md='3'/>
