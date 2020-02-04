@@ -1,7 +1,10 @@
 import React, { useContext, useState, forwardRef } from "react";
-import {Button, Col} from 'reactstrap';
+import {Col, Input, Button} from 'reactstrap';
 import AutoSizer from "react-virtualized-auto-sizer";
 import {genCascadedNameEntries} from './nameGenerate';
+
+import FilterIcon from './filter.svg';
+import SortIcon from './sort-ascending.svg';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 
@@ -14,6 +17,7 @@ console.log(entries);
 // however, it doesn't affected by scrolling, and is the place where we are going
 // to render sticky items.
 
+const HIST_LINE_HEIGHT = 30;
 
 const Row = forwardRef(({ data, index, style }, ref) => {
   
@@ -53,6 +57,54 @@ const HistRow = ({ data, index, style }) => {
   </div>
 };
 
+const FilterContainer = ({children, topLength}) => {
+  
+  const style = {
+    top: topLength * HIST_LINE_HEIGHT,
+    height: 40,
+    backgroundColor:'lightgray',
+    display: 'flex',
+    alignItems: 'center'
+  }
+  
+  return <div className="sticky" style={style}>{children}</div>
+}
+
+const FilterCol = ({colKey, isFilterable, isSortable, ...colProps}) => {
+
+  const [inputVal, setInputVal] = useState('');
+
+  const {sort, filter} = useContext(TreeListContext);
+
+  const colStyle = {
+    display:'flex',
+  }
+
+  const FilterComp = <div style={{display:'flex'}}>
+    <Input bsSize="sm" value={inputVal} onChange={(e) => setInputVal(e.target.value)} />
+    <Button color="dark" outline size="sm" style={{marginLeft:'0.5rem'}} onClick={() => filter(colKey, inputVal)}>
+      <img style={{height:'1.1rem'}} src={FilterIcon} />
+    </Button>
+  </div>
+
+  return <Col style={colStyle} {...colProps} >
+    {isFilterable && FilterComp}
+    {isSortable && <Button color="dark" outline size="sm" onClick={() => {sort(colKey)}} style={{marginLeft:'0.5rem'}}>
+        <img style={{height:'1.1rem'}} src={SortIcon} />
+      </Button>}
+  </Col>
+}
+
+const FilterRow = ({topLength}) => {
+
+  return <FilterContainer topLength={topLength}>
+    <FilterCol md='3'/>
+    <FilterCol md='6' colKey='desc' isSortable={true} isFilterable={true}/>
+    <FilterCol md='3' colKey='key'  isSortable={true} isFilterable={true}/>
+  </FilterContainer>
+}
+
+
 const App = () => {
 
   let headerStyle = {
@@ -91,7 +143,9 @@ const App = () => {
             height={height}
             width={width}
             itemCount={entries.length}
-            historyRowRender={HistRow}
+            historyRowRenderer={HistRow}
+            historyRowHeight={HIST_LINE_HEIGHT}
+            filterRowRenderer={FilterRow}
           >
             {Row}
           </TreeList>
