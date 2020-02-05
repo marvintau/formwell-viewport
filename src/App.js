@@ -83,14 +83,14 @@ const FilterCol = ({colKey, isFilterable, isSortable, ...colProps}) => {
   const FilterComp = <div style={{display:'flex'}}>
     <Input bsSize="sm" value={inputVal} onChange={(e) => setInputVal(e.target.value)} />
     <Button color="dark" outline size="sm" style={{marginLeft:'0.5rem'}} onClick={() => filter(colKey, inputVal)}>
-      <img style={{height:'1.1rem'}} src={FilterIcon} />
+      <img alt="filter-button" style={{height:'1.1rem'}} src={FilterIcon} />
     </Button>
   </div>
 
   return <Col style={colStyle} {...colProps} >
     {isFilterable && FilterComp}
     {isSortable && <Button color="dark" outline size="sm" onClick={() => {sort(colKey)}} style={{marginLeft:'0.5rem'}}>
-        <img style={{height:'1.1rem'}} src={SortIcon} />
+        <img alt="sort-button" style={{height:'1.1rem'}} src={SortIcon} />
       </Button>}
   </Col>
 }
