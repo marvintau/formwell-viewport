@@ -3,8 +3,12 @@
   "homepage": "https://marvintau.github.io/formwell-viewport",
   "version": "0.1.0",
   "private": false,
-  "main": "dist/index.js",
-  "module": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/user/repository.git"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
   "babel": {
     "presets": [
       "react",
