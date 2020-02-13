@@ -333,11 +333,14 @@ export default ({data, colSpecs}) => {
   return <div style={{display:'flex', flexDirection:"column", height:'100%', width:'100%'}}>
     {Header(colSpecs)}
     <div style={{flex:1, width:'100%'}}>
-      <AutoSizer>
+      {/* <AutoSizer>
       {({height, width}) => {
+
+        console.log(data, 'data');
+ */}
         return <TreeList
-          height={height}
-          width={width}
+          height={800}
+          // width={width}
 
           data={data}
           itemCount={data.length}
@@ -348,8 +351,8 @@ export default ({data, colSpecs}) => {
         >
           {Row(colSpecs)}
         </TreeList>
-      }}
-      </AutoSizer>
+      {/* }}
+      </AutoSizer> */}
     </div>
   </div>
 }

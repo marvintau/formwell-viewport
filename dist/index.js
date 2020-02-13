@@ -557,29 +557,21 @@ exports.default = function (_ref12) {
     _react2.default.createElement(
       'div',
       { style: { flex: 1, width: '100%' } },
+      'return ',
       _react2.default.createElement(
-        _reactVirtualizedAutoSizer2.default,
-        null,
-        function (_ref13) {
-          var height = _ref13.height,
-              width = _ref13.width;
+        TreeList,
+        {
+          height: 800
+          // width={width}
 
-          return _react2.default.createElement(
-            TreeList,
-            {
-              height: height,
-              width: width,
+          , data: data,
+          itemCount: data.length,
 
-              data: data,
-              itemCount: data.length,
-
-              historyRowRenderer: HistoryRow(colSpecs),
-              historyRowHeight: HIST_LINE_HEIGHT,
-              filterRowRenderer: FilterRow(colSpecs)
-            },
-            Row(colSpecs)
-          );
-        }
+          historyRowRenderer: HistoryRow(colSpecs),
+          historyRowHeight: HIST_LINE_HEIGHT,
+          filterRowRenderer: FilterRow(colSpecs)
+        },
+        Row(colSpecs)
       )
     )
   );
