@@ -28,15 +28,6 @@ const colSpecs = {
 
 const App = () => {
 
-  const [data, setData] = useState([]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setData(entries);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [])
-
   const titleStyle = {
     marginLeft:'10px',
     fontFamily: '"Avenir Next Condensed", "Helvetica Neue", sans-serif',
@@ -50,7 +41,7 @@ const App = () => {
 
   return  <div style={{height:'100vh', width:'100vw'}}>
     {title}
-    <List data={data} colSpecs={colSpecs} />
+    <List data={entries} colSpecs={colSpecs} />
   </div>
 };
 

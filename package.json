@@ -2,7 +2,7 @@
   "name": "formwell-viewport",
   "homepage": "https://marvintau.github.io/formwell-viewport",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "main": "dist/index.js",
   "module": "dist/index.js",
   "babel": {
@@ -26,7 +26,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "NODE_ENV=production && rm -rf dist && mkdir dist && npx babel src/TreeList --out-dir dist --copy-files",
+    "build": "rm -rf dist && mkdir dist && npx babel src/TreeList --out-dir dist --copy-files",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "deploy": "react-scripts build && gh-pages -d build"
